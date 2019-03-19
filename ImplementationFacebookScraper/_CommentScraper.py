@@ -35,7 +35,7 @@ class _CommentScraper():
             h, m = (int(GMT[0].replace('-','')), int(GMT[1]))
             return timestring - timedelta(hours=h, minutes=m)
 
-    def _comment_formalizer(comment_object, GMT):
+    def _comment_formalizer(source, comment_object, GMT):
         """
         Formalizing result object post that obtained from Facebook GraphAPI
 
@@ -108,9 +108,23 @@ class _CommentScraper():
             comment_object.update({'comment_type': 'text',
                                    'media_facebook_url': 'N/A',
                                    'media_image_url': 'N/A'})
+        
+        if 'from' in source:
+            name = unidecode(source['from']['name']).replace('\n',' ').replace('\t',' ').replace('\r',' ')
+            name = re.sub('^\s+','', name)
+            name = re.sub('\s+$','', name)
+            if len(re.findall('\S', name)) < 1:
+                name = 'N/A'
+            from_id = source['from']['id']
+        else:
+            name = 'N/A'
+            from_id = 'N/A'
+        comment_object.update({'post_from_id': from_id,
+                               'post_from_name': name,
+                               'post_id': source['id']})
         return comment_object
 
-    def _comment_storer(storer, objects, GMT, max_comment_limit='all'):
+    def _comment_storer(source, storer, objects, GMT, max_comment_limit='all'):
         """
         A function to append the scraped comments on list `storer` if conditions are correct
 
@@ -136,7 +150,7 @@ class _CommentScraper():
         """
         if (max_comment_limit is not 'all'):
             for obj in objects['data']:
-                obj = _CommentScraper._comment_formalizer(obj, GMT)
+                obj = _CommentScraper._comment_formalizer(source, obj, GMT)
                 if len(storer) < max_comment_limit:
                     storer.append(obj)
                     condition = True
@@ -144,7 +158,7 @@ class _CommentScraper():
                     condition = False
         else:
             for obj in objects['data']:
-                obj = _CommentScraper._comment_formalizer(obj, GMT)
+                obj = _CommentScraper._comment_formalizer(source, obj, GMT)
                 storer.append(obj)
                 condition = True
         if len(objects['data']) == 0:
@@ -164,7 +178,7 @@ class _CommentScraper():
                     A facebook post id.
         """
         try:
-            return engine.get_object(target_id)
+            return engine.get_object(target_id, fields='from')
         except:
             logging.error('Post %s not found!' % target_id)
             return None
@@ -220,7 +234,7 @@ class _CommentScraper():
             objects = engine.get_connections(id=target_id, connection_name='comments', fields=fields)
 
             # storing the comments data and navigating to the next page to get more data if conditions are correct
-            if (_CommentScraper._comment_storer(storer=comments, objects=objects, GMT=GMT, max_comment_limit=max_comment_limit) is True):
+            if (_CommentScraper._comment_storer(source=status, storer=comments, objects=objects, GMT=GMT, max_comment_limit=max_comment_limit) is True):
                 if len(comments) > 0:
                     while True:
                         logging.info('Scraping post %s comments %i !' % (status['id'], len(comments)))
@@ -230,7 +244,7 @@ class _CommentScraper():
                             logging.info('Scraping post %s comments completed! Total : %i' % (status['id'], len(comments)))
                             break
                         objects = requests.get(next_page).json()
-                        if (_CommentScraper._comment_storer(storer=comments, objects=objects, GMT=GMT, max_comment_limit=max_comment_limit) is False):
+                        if (_CommentScraper._comment_storer(source=status, storer=comments, objects=objects, GMT=GMT, max_comment_limit=max_comment_limit) is False):
                             logging.info('Scraping post %s comments completed! Total : %i' % (status['id'], len(comments)))
                             break
                 else:
