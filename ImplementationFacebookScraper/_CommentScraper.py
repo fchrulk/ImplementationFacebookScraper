@@ -98,8 +98,11 @@ class _CommentScraper():
 
         if 'attachment' in comment_object:
             comment_object.update({'comment_type': comment_object['attachment']['type'],
-                                   'media_facebook_url': comment_object['attachment']['url'],
-                                   'media_image_url': comment_object['attachment']['media']['image']['src']})
+                                   'media_facebook_url': comment_object['attachment']['url']})
+            if 'media' in comment_object['attachment']:
+                comment_object.update({'media_image_url': comment_object['attachment']['media']['image']['src']})
+            else:
+                comment_object.update({'media_image_url': 'N/A'})
             comment_object.pop('attachment')
         else:
             comment_object.update({'comment_type': 'text',
