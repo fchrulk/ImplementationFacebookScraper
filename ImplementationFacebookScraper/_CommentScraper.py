@@ -54,7 +54,7 @@ class _CommentScraper():
 
         """
         if 'from' in comment_object:
-            if ['name'] in comment_object['from']:
+            if 'name' in comment_object['from']:
                 name = unidecode(comment_object['from']['name']).replace('\n',' ').replace('\t',' ').replace('\r',' ')
                 name = re.sub('^\s+','', name)
                 name = re.sub('\s+$','', name)
