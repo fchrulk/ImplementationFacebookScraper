@@ -99,8 +99,11 @@ class _UserGroupScraper():
         group_object.pop('privacy')
         group_object.update({'group_member_count': group_object['member_count']})
         group_object.pop('member_count')
-        group_object.update({'group_recently_active': _UserGroupScraper._time_converter(group_object['updated_time'], GMT)})
-        group_object.pop('updated_time')
+        if 'updated_time' in group_object:
+            group_object.update({'group_recently_active': _UserGroupScraper._time_converter(group_object['updated_time'], GMT)})
+            group_object.pop('updated_time')
+        else:
+            group_object.update({'group_recently_active': 'N/A'})
         group_object.update({'is_target_administrator': group_object['administrator']})
         group_object.pop('administrator')
         group_object.update({'from_name': target['name']})
@@ -190,7 +193,18 @@ class _UserGroupScraper():
         if (status is not None):
 
             # requesting joined groups by target from Facebook GraphAPI
-            objects = engine.get_connections(target_id, 'groups', fields=fields)
+            reload_count = 0
+            while True:
+                try:
+                    objects = engine.get_connections(target_id, 'groups', fields=fields)
+                    break
+                except Exception as e:
+                    reload_count += 1
+                    logging.error(str(e))
+                    if reload_count == 10:
+                        logging.error('Skipping the process because : %s' % str(e))
+                        objects = {'data':[]}
+                        break
 
             # storing the joined groups data and navigating to the next page to get more data if conditions are correct
             if (_UserGroupScraper._group_storer(target=status, storer=groups, objects=objects, GMT=GMT, max_group_limit=max_group_limit) is True):
@@ -202,7 +216,18 @@ class _UserGroupScraper():
                         else:
                             logging.info('Scraping %s (%s) joined groups complete! Total : %i' % (status['name'], status['id'], len(groups)))
                             break
-                        objects = requests.get(next_page).json()
+                        reload_count = 0
+                        while True:
+                            try:
+                                objects = requests.get(next_page).json()
+                                break
+                            except Exception as e:
+                                reload_count += 1
+                                logging.error(str(e))
+                                if reload_count == 10:
+                                    logging.error('Skipping the process because : %s' % str(e))
+                                    objects = {'data':[], 'paging':{'empty':str(e)}}
+                                    break
                         if (_UserGroupScraper._group_storer(target=status, storer=groups, objects=objects, GMT=GMT, max_group_limit=max_group_limit) is False):
                             logging.info('Scraping %s (%s) joined groups complete! Total : %i' % (status['name'], status['id'], len(groups)))
                             break

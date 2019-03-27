@@ -28,7 +28,7 @@ class FacebookScraper():
               'his open-source Python script on github [https://github.com/mobolic/facebook-sdk]'
     __date__ = '2019'
     
-    def Auth(self, yaml_file):
+    def Auth(self, yaml_file, source_path_creds='creds/'):
         """
         Try to creating auth using existing access token on selected yaml file on directory `creds/`
         
@@ -38,7 +38,7 @@ class FacebookScraper():
                     Input the name of yaml file. Please place your yaml file on directory `creds/`
                     Example : `fachrul_credentials.yaml`
         """
-        return _Authentication(yaml_file)
+        return _Authentication(yaml_file, source_path_creds)
 
     def GetBasicInfoUser(self, engine, target_id, add_field=None, remove_field=None):
         """

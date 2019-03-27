@@ -100,8 +100,12 @@ class _CommentScraper():
             comment_object.update({'reactions': []})
 
         if 'attachment' in comment_object:
-            comment_object.update({'comment_type': comment_object['attachment']['type'],
-                                   'media_facebook_url': comment_object['attachment']['url']})
+            if 'url' in comment_object['attachment']:
+                comment_object.update({'comment_type': comment_object['attachment']['type'],
+                                       'media_facebook_url': comment_object['attachment']['url']})
+            else:
+                comment_object.update({'comment_type': comment_object['attachment']['type'],
+                                       'media_facebook_url': 'N/A'})
             if 'media' in comment_object['attachment']:
                 comment_object.update({'media_image_url': comment_object['attachment']['media']['image']['src']})
             else:
@@ -246,7 +250,19 @@ class _CommentScraper():
                         else:
                             logging.info('Scraping post %s comments completed! Total : %i' % (status['id'], len(comments)))
                             break
-                        objects = requests.get(next_page).json()
+                        
+                        reload_count = 0
+                        while True:
+                            try:
+                                objects = requests.get(next_page).json()
+                                break
+                            except Exception as e:
+                                reload_count += 1
+                                logging.error(str(e))
+                                if reload_count == 10:
+                                    logging.error('Skipping the process because : %s' % str(e))
+                                    objects = {'data':[], 'paging':{'empty':str(e)}}
+                                    break
                         if (_CommentScraper._comment_storer(source=status, storer=comments, objects=objects, GMT=GMT, max_comment_limit=max_comment_limit) is False):
                             logging.info('Scraping post %s comments completed! Total : %i' % (status['id'], len(comments)))
                             break

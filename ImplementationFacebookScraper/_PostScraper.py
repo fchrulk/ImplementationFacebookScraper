@@ -239,9 +239,37 @@ class _PostScraper():
 
             # requesting posts data from Facebook GraphAPI
             if 'privacy' not in status:
-                objects = engine.get_connections(id=target_id, connection_name='posts', fields=fields)
+                reload_count = 0
+                while True:
+                    try:
+                        objects = engine.get_connections(id=target_id, connection_name='posts', fields=fields)
+                        break
+                    except Exception as e:
+                        reload_count += 1
+                        logging.error('We will trying again! %i %s' % (reload_count, str(e)))
+                        if not str(e).startswith('HTTPSConnectionPool'):
+                            if reload_count == 10:
+                                logging.error('Skipping the process because : %s' % str(e))
+                                objects = {'data':[]}
+                                break
+                        else:
+                            if reload_count == 50:
+                                logging.error('Skipping the process because : %s' % str(e))
+                                objects = {'data':[]}
+                                break
             else:
-                objects = engine.get_connections(id=target_id, connection_name='feed', fields=fields)
+                reload_count = 0
+                while True:
+                    try:
+                        objects = engine.get_connections(id=target_id, connection_name='feed', fields=fields)
+                        break
+                    except Exception as e:
+                        reload_count += 1
+                        logging.error(str(e))
+                        if reload_count == 10:
+                            logging.error('Skipping the process because : %s' % str(e))
+                            objects = {'data':[]}
+                            break
 
             # storing the posts data and navigating to the next page to get more data if conditions are correct
             if (_PostScraper._post_storer(storer=posts, objects=objects, min_date_limit=min_date_limit, GMT=GMT, max_post_limit=max_post_limit) is True):
@@ -253,7 +281,25 @@ class _PostScraper():
                         else:
                             logging.info('Scraping %s (%s) posts complete! Total : %i' % (status['name'], status['id'], len(posts)))
                             break
-                        objects = requests.get(next_page).json()
+                        reload_count = 0
+                        while True:
+                            try:
+                                objects = requests.get(next_page).json()
+                                break
+                            except Exception as e:
+                                reload_count += 1
+                                logging.error('We will trying again! %i %s' % (reload_count, str(e)))
+                                if not str(e).startswith('HTTPSConnectionPool'):
+                                    if reload_count == 10:
+                                        logging.error('Skipping the process because : %s' % str(e))
+                                        objects = {'data':[], 'paging':{'empty':str(e)}}
+                                        break
+                                else:
+                                    if reload_count == 50:
+                                        logging.error('Skipping the process because : %s' % str(e))
+                                        objects = {'data':[], 'paging':{'empty':str(e)}}
+                                        break
+
                         if (_PostScraper._post_storer(storer=posts, objects=objects, min_date_limit=min_date_limit, GMT=GMT, max_post_limit=max_post_limit) is False):
                             logging.info('Scraping %s (%s) posts complete! Total : %i' % (status['name'], status['id'], len(posts)))
                             break

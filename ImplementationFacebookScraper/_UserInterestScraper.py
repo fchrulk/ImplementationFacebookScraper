@@ -120,9 +120,11 @@ class _UserInterestScraper():
             interest_object.pop('talking_about_count')
         else:
             interest_object.update({'interest_talking_about_count': 0})
-
-        interest_object.update({'interests_created_time': _UserInterestScraper._time_converter(interest_object['created_time'], GMT)})
-        interest_object.pop('created_time')
+        if 'created_time' in interest_object:
+            interest_object.update({'interests_created_time': _UserInterestScraper._time_converter(interest_object['created_time'], GMT)})
+            interest_object.pop('created_time')
+        else:
+            interest_object.update({'interests_created_time': 'N/A'})
 
         categories = []
         if 'category_list' in interest_object:

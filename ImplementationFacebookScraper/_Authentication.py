@@ -33,7 +33,7 @@ def api_logger(yaml_file):
     return logger
 
 class _Authentication():
-    def __init__(self, yaml_file):
+    def __init__(self, yaml_file, source_path_creds='creds/'):
         """
         Try to creating auth using existing access token on selected yaml file on directory `creds/`
         
@@ -44,16 +44,16 @@ class _Authentication():
                     Example : `fachrul_credentials.yaml`
         """
         self.logger = api_logger(yaml_file)
-        creds = self._load_credential(yaml_file=yaml_file)
+        creds = self._load_credential(yaml_file=yaml_file, source_path=source_path_creds)
         logging.info('Scraper using worker : %s' % creds['name'])
         self.engine = self._auth(token=creds['token'])
         self.worker_info = self._worker_info()
     
-    def _load_credential(self, yaml_file):
+    def _load_credential(self, yaml_file, source_path='creds/'):
         """
         Load credentials on yaml file        
         """
-        return yaml.load(open('creds/%s' % yaml_file).read())
+        return yaml.load(open('%s%s' % (source_path, yaml_file)).read())
 
     def _auth(self, token):
         """
