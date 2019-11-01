@@ -1,5 +1,5 @@
 # ImplementationFacebookScraper
-Getting data from public Facebook Account/Page/Group and still on progress to scrape possible data! An implementation using mobolic facebook-sdk [https://github.com/mobolic/facebook-sdk] with some custumization like:
+Getting data from public Facebook Account/Page/Group and still on progress to scrape possible data! An implementation using mobolic (facebook-sdk) [https://github.com/mobolic/facebook-sdk] with some custumization like:
 * Scraping posts based on days or even how many posts you want to retrieve
 * You could set how many groups you want to retrieve while scraping joined groups of user
 * You could set how many interest you want to retrieve while scraping interests of user
@@ -75,7 +75,7 @@ group_basic_info = scraper.GetBasicInfoGroup(engine=api.engine, target_id=group_
 
 * **Fachrul Kurniansyah** - *ImplementationFacebookScraper* - [fchrulk](https://github.com/fchrulk)
 
-You can visit my LinkedIn [here](https://www.linkedin.com/in/fchrulk).
-
-Email : [fchrulk@outlook.com]
+#### Feel Free to Discuss :relieved:
+:coffee: LinkedIn&ensp;: [Fachrul Kurniansyah](https://www.linkedin.com/in/fchrulk)<br>
+:e-mail: Email&ensp;&ensp;&ensp;&ensp;: fachrul.kurniansyah@gmail.com
 
