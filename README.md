@@ -1,5 +1,5 @@
 # ImplementationFacebookScraper
-Getting data from public Facebook Account/Page/Group and still on progress to scrape possible data! An implementation using mobolic (facebook-sdk)[https://github.com/mobolic/facebook-sdk] with some custumization like:
+Getting data from public Facebook Account/Page/Group and still on progress to scrape possible data! An implementation using mobolic [facebook-sdk](https://github.com/mobolic/facebook-sdk) with some custumization like:
 * Scraping posts based on days or even how many posts you want to retrieve
 * You could set how many groups you want to retrieve while scraping joined groups of user
 * You could set how many interest you want to retrieve while scraping interests of user
